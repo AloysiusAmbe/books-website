@@ -1,0 +1,15 @@
+{% extends "layout.html" %}
+
+{% block body %}
+    <div class="main">
+        <h1 style="font-family: 'Roboto';">Welcome to our books site</h1>
+        <br>
+        <p>
+            You can view the details of over 5000 books, including their ratings,
+            write reviews about them and rate them as well.
+        </p>
+        <br>
+        <a href="{{ url_for('login') }}">Login</a>
+        <a href="{{ url_for('register') }}">Sign Up</a>
+    </div>
+{% endblock %}
