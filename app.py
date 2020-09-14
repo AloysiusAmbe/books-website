@@ -1,4 +1,6 @@
 import os
+import requests
+from bs4 import BeautifulSoup
 
 from flask import Flask, session, render_template, redirect, request, flash
 from flask_session import Session
@@ -42,16 +44,49 @@ def books():
     return render_template("book_list.html", books=books)
 
 
-@app.route("/<author>")
+@app.route("/books/<author>")
 def author(author):
-    return render_template("info.html")
+    author = author
+    url = "https://en.wikipedia.org/wiki/"
+    name_substrings = author.split()
+
+    for substring in name_substrings:
+        url += substring
+        url += "_"
+    response = requests.get(url)
+    if response.status_code != 200:
+        print("Connection Unsuccessful")
+        return
+    soup = BeautifulSoup(response.content, "html.parser")
+
+    # Scraps the author's image
+    images = soup.find_all("img")
+    for image in images:
+        img = image['src']
+        if img[-3:] == "jpg":
+            print(img)
+            break
+
+    # Scraps the author's information
+    info = soup.find_all("p")
+    author_info = ""
+    for passage in info:
+        passage = passage.get_text()
+        if name_substrings[-1] in passage:
+            author_info = passage
+            break
+
+    books = db.execute(f"SELECT * FROM books WHERE author='{author}'")
+    return render_template("author_info.html", author=author, books=books, img=img, author_info=author_info, url=url)
 
 
-@app.route("/<isbn>")
+@app.route("/books/<isbn>")
 def isbn(isbn):
-    return render_template("info.html")
+    isbn = isbn
+    books = db.execute(f"SELECT * FROM books WHERE author='{isbn}'")
+    return render_template("info.html", books=books)
 
 
-@app.route("/<title>")
+@app.route("/books/<title>")
 def title(title):
     return render_template("info.html")
