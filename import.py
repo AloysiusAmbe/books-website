@@ -20,11 +20,11 @@ def main():
     '''
     file = csv.reader(open("books.csv"))
 
-    # for isbn, title, author, year in file:
-    #     db.execute("INSERT INTO books (isbn, title, author, year) VALUES (:isbn, :title, :author, :year)",
-    #                 {"isbn": isbn, "title": title, "author": author, "year": year})
-    #     print(f"Added book {title} by {author}")
-    # db.commit()
+    for isbn, title, author, year in file:
+        db.execute("INSERT INTO books (isbn, title, author, year) VALUES (:isbn, :title, :author, :year)",
+                    {"isbn": isbn, "title": title, "author": author, "year": year})
+        print(f"Added book {title} by {author}")
+    db.commit()
 
 
 if __name__ == "__main__":
