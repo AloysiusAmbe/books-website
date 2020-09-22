@@ -1,15 +1,29 @@
 {% extends "layout.html" %}
 
 {% block body %}
-    <div class="main">
-        <h1 style="font-family: 'Roboto';">Welcome to our books site</h1>
-        <br>
-        <p>
-            You can view the details of over 5000 books, including their ratings,
-            write reviews about them and rate them as well.
-        </p>
-        <br>
-        <a href="{{ url_for('login') }}">Login</a>
-        <a href="{{ url_for('register') }}">Sign Up</a>
-    </div>
+    <section class="main">
+        <div class="contents">
+            <h1 style="font-family: 'Roboto';">Welcome to our books site</h1>
+            <br>
+            <p>
+                You can view the details of over 5000 books, including their ratings,
+                write reviews about them and rate them as well.
+            </p>
+            <br>
+            {% if user_in_session == False %}
+                <a href="{{ url_for('login') }}">Login</a>
+                <a href="{{ url_for('register') }}">Sign Up</a>
+            {% else %}
+                <form action="{{ url_for('results') }}" method="POST" class="mx-2 my-auto d-inline w-100">
+                    <div class="input-group">
+                        <input type="text" class="form-control border border-right-0" name="search_input" placeholder="Title, Author, or isbn">
+                        <span class="input-group-append">
+                            <button class="btn btn-success my-2 my-sm-0" type="submit">Search</button>
+                        </span>
+                    </div>
+                </form>
+            {% endif %}
+        </div>
+    </section>
+    
 {% endblock %}

@@ -21,9 +21,9 @@
     body {
         background: url(https://media1.fdncms.com/stranger/imager/u/original/40901533/shutterstock_671735605.jpg) no-repeat fixed;
         background-size: cover;
+        font-family: 'Montserrat';
     }
     .box {
-        font-family: 'Montserrat';
         position: absolute;
         top: 50%;
         left: 50%;
@@ -47,9 +47,9 @@
     }
     .box .input-box input {
         width: 100%;
-        padding: 10px 0;
+        padding: 10px 10px;
         font-size: 16px;
-        margin-bottom: 30px;
+        margin-bottom: 20px;
         border: none;
         outline: none;
         background: transparent;
@@ -70,6 +70,11 @@
     }
     .submit:hover {
         background-color: rgb(42, 155, 69);
+    }
+    .error {
+      color: #ff0000;
+      text-align: start;
+      padding-bottom: 10px;
     }
     @media only screen and (max-width: 1200px) {
         .box {
@@ -99,17 +104,26 @@
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('books') }}">Books</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('login') }}">Login</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('register') }}">Sign Up</a>
-            </li>
-          </ul>
-          <form class="form-inline my-2 my-lg-0">
-            <input class="form-control mr-sm-2" type="search" placeholder="isbn, title or author" aria-label="Search">
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-          </form>
+
+            {% if user_in_session == False %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('register') }}">Sign Up</a>
+              </li>
+              </ul>
+            {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+              </li>
+              </ul>
+              <form action="{{ url_for('results') }}" method="POST"  class="form-inline my-2 my-lg-0">
+                <input class="form-control mr-sm-2" type="search" name="search_input" placeholder="isbn, title or author" aria-label="Search">
+                <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+              </form>
+            {% endif %}
+
         </div>
       </nav>
 

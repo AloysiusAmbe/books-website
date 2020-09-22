@@ -1,23 +1,45 @@
 {% extends "book_details_layout.html" %}
 
 {% block body %}
-    <div class="container">
-        <div class="row">
-            <div class="col-sm-6 author">
-                <img src="{{ img }}" alt="Image unavailable">
-                <h1>{{ author }}</h1>
+    <div class="author-info">
+        <div class="image">
+            <img src="{{ img }}" alt="Image unavailable">
+        </div>
+        
+        <div class="info">
+            <div class="text">
+                <h3>{{ author }}</h3>
                 <p>
                     {{ author_info }}
                     <a href="{{ url }}" target="_blank">Wikipedia</a>
                 </p>
             </div>
-
-            <div class="col-sm-6 author-work">
-                {% for id, isbn, title, author, year in books %}
-                    <li>{{ title }}</li>
-                    <img src="http://covers.openlibrary.org/b/isbn/{{ isbn }}-M.jpg" alt="No image available">
-                {% endfor %}
-            </div>
         </div>
+    </div>
+
+    <div class="books">
+        <h3 style="padding: 10px;">Author's Work</h3>
+        {% for id, isbn, title, author, year in books %}
+            <div class="book">
+                <div class="book-cover">
+                    <img src="http://covers.openlibrary.org/b/isbn/{{ isbn }}-S.jpg" alt="No image available">
+                </div>
+                <div class="book-title">
+                    <h5>
+                        <a style="color: #000000;" href="{{ url_for('title', title=title) }}">{{ title }}</a>
+                    </h5>
+                    <br>
+                    <span>
+                        Published: {{ year }}
+                    </span>
+                    <br>
+                    <span>
+                        Rating: {{ data[isbn]["average_rating"] }} / 5
+                    </span>
+                    <br>
+                    <span>{{ data[isbn]["working_rating"] }} people have rated this book.</span>
+                </div>
+            </div>
+        {% endfor %}
     </div>
 {% endblock %}

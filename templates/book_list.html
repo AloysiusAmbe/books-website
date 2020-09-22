@@ -32,17 +32,23 @@
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('books') }}">Books</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('login') }}">Login</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('register') }}">Sign Up</a>
-            </li>
-          </ul>
-          <form class="form-inline my-2 my-lg-0">
-            <input class="form-control mr-sm-2" type="search" placeholder="isbn, title or author" aria-label="Search">
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-          </form>
+            {% if user_in_session == False %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('register') }}">Sign Up</a>
+              </li>
+            {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+              </li>
+            </ul>
+            <form action="{{ url_for('results') }}" method="POST"  class="form-inline my-2 my-lg-0">
+              <input class="form-control mr-sm-2" type="search" name="search_input" placeholder="isbn, title or author" aria-label="Search">
+              <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
+            {% endif %}
         </div>
     </nav>
 
@@ -54,18 +60,21 @@
                     <th>isbn</th>
                     <th>Title</th>
                     <th>Author</th>
+                    <th>Published</th>
                 </tr>
             </thead>
             {% for id, isbn, title, author, year in books %}
                 <tbody>
                     <tr>
-                        <td><a href="{{ url_for('isbn', isbn=isbn) }}">{{ isbn }}</a></td>
-                        <td><a href="{{ url_for('title', title=title) }}">{{ title }}</a></td>
-                        <td><a href="{{ url_for('author', author=author) }}">{{ author }}</a></td>
+                        <td><a style="color: #000000;" href="{{ url_for('isbn', isbn=isbn) }}">{{ isbn }}</a></td>
+                        <td><a style="color: #000000;" href="{{ url_for('title', title=title) }}">{{ title }}</a></td>
+                        <td><a style="color: #000000;" href="{{ url_for('author', author=author) }}">{{ author }}</a></td>
+                        <td>{{ year }}</td>
                     </tr>
                 </tbody>
             {% endfor %}
         </table>
+        <a href="{{ url_for('books') }}">More</a>
     </div>
 </body>
 </html>

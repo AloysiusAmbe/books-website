@@ -1,0 +1,26 @@
+{% extends "book_details_layout.html" %}
+
+{% block body %}
+    <div class="books">
+        {% for id, isbn, title, author, year in book %}
+            <div class="book">
+                <div class="book-cover">
+                    <img src="http://covers.openlibrary.org/b/isbn/{{ isbn }}-M.jpg" alt="No image available">
+                </div>
+                <div class="book-title">
+                    <p>
+                        <h2>{{ title }}</h2>
+                        <br>
+                        by: <a href="{{ url_for('author', author=author) }}">{{ author }}</a>
+                        <br>
+                        Published: {{ year }}
+                        <br>
+                        Rating: {{ average_rating }} / 5
+                        <br>
+                        {{ working_rating }} people have rated this book.
+                    </p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}

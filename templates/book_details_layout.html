@@ -12,6 +12,48 @@
     <!-- Google fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@500&family=Open+Sans&family=Roboto:wght@700&display=swap" rel="stylesheet">
 </head>
+<style>
+  * {
+    padding: 0;
+    margin: 0;
+    box-sizing: border-box;
+  }
+  .author-info {
+    margin: 5% 5%;
+    display: flex;
+    justify-content: center;
+    border-radius: 10px;
+  }
+  .author-info .image {
+    height: 300px;
+    width: 30%;
+  }
+  .author-info .image img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 10px;
+  }
+  .author-info .info {
+    width: 60%;
+    margin: auto;
+    text-align: center;
+  }
+  .books {
+    margin: 5%;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+  }
+  .book {
+    display: flex;
+    padding: 10px;
+  }
+  .book-title {
+    padding: 10px;
+  }
+</style>
 <body style="font-family: 'Montserrat';">
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand" href="{{ url_for('index') }}">Home</a>
@@ -24,17 +66,23 @@
             <li class="nav-item">
               <a class="nav-link" href="{{ url_for('books') }}">Books</a>
             </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('login') }}">Login</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('register') }}">Sign Up</a>
-            </li>
-          </ul>
-          <form class="form-inline my-2 my-lg-0">
-            <input class="form-control mr-sm-2" type="search" placeholder="isbn, title or author" aria-label="Search">
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-          </form>
+            {% if user_in_session == False %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('register') }}">Sign Up</a>
+              </li>
+            {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+              </li>
+            </ul>
+            <form action="{{ url_for('results') }}" method="POST"  class="form-inline my-2 my-lg-0">
+              <input class="form-control mr-sm-2" type="search" name="search_input" placeholder="isbn, title or author" aria-label="Search">
+              <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
+            {% endif %}
         </div>
       </nav>
       
