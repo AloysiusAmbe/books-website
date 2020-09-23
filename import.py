@@ -4,8 +4,6 @@ import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 
-# set DATABASE_URL=postgres://fvncbgyogwnedd:3200e45562344293704dceed8a094446a1c36e08599f4d4649b595fd99f3d02c@ec2-52-87-135-240.compute-1.amazonaws.com:5432/dav3ellvuqpbfb
-
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):
     raise RuntimeError("DATABASE_URL is not set")
