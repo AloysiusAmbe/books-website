@@ -9,10 +9,6 @@ from datetime import timedelta
 
 app = Flask(__name__)
 
-# Session
-app.secret_key = os.getenv("SECRET_KEY")
-app.permanent_session_lifetime = timedelta(minutes=15)
-
 # Check for environment variable
 if not os.getenv("DATABASE_URL"):
     raise RuntimeError("DATABASE_URL is not set")
@@ -22,12 +18,19 @@ app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
+app.secret_key = os.getenv("SECRET_KEY")
+app.permanent_session_lifetime = timedelta(minutes=15)
+
 # Set up database
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
 @app.route("/", methods=["POST", "GET"])
 def index():
+    '''
+    Main page
+    '''
+    
     if "user" in session:
         user_in_session = True
     else:
@@ -38,7 +41,7 @@ def index():
 
 @app.route("/login", methods=["POST", "GET"])
 def login():
-    # Redirects user of logged in
+    # Redirects the user to the main passage if in session
     if "user" in session:
         user_in_session = True
         return redirect(url_for('index'))
@@ -55,6 +58,7 @@ def login():
         # Check to see if user is in the database
         for id, db_username, db_password in users:
             if username == db_username and password == db_password:
+                # Sets up a session for the user and redirects them to the main page
                 session.permanent = True
                 session["user"] = username
                 user_in_session = True
@@ -68,7 +72,7 @@ def login():
 
 @app.route("/register", methods=["POST", "GET"])
 def register():
-    # Redirects user of logged in
+    # Redirects the user to the main passage if in session
     if "user" in session:
         user_in_session = True
         return redirect(url_for('index'))
@@ -87,7 +91,7 @@ def register():
         # Checks if the username length is acceptable
         username_length = len(username)
         if username_length < 5 or username_length > 12:
-            username_error = "Username must be of lengt 5 to 12."
+            username_error = "Username must be between 5 to 12 characters."
             return render_template("register.html", username_error=username_error, user_in_session=user_in_session)
 
         # Checks if both password fields are the same
@@ -98,7 +102,7 @@ def register():
         # Checks if the password length is acceptable
         password_length = len(password)
         if password_length < 8 or password_length > 16:
-            password_error = "Password must be of length 7 - 16."
+            password_error = "Password must be between 7 - 16 characters."
             return render_template("register.html", password_error=password_error, user_in_session=user_in_session)
 
         # Checks if the username and password already exist
@@ -143,7 +147,7 @@ def author(author):
     '''
     Scrapes wikipedia for the author's information and picture.
     Gets the average rating and working rating for each book
-    written by the author.
+    written by the author using Goodreads API.
     '''
 
     author = author
@@ -158,7 +162,6 @@ def author(author):
 
     # Checks to make sure the response was successful
     if response.status_code != 200:
-        print("Connection Unsuccessful")
         return
     soup = BeautifulSoup(response.content, "html.parser")
 
