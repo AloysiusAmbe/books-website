@@ -64,39 +64,37 @@
     }
 </style>
 <body>
-  <section>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-      <a class="navbar-brand" href="{{ url_for('index') }}">Home</a>
-      <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-    
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav mr-auto">
-          <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('books') }}">Books</a>
-          </li>
+  <nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <a class="navbar-brand" href="{{ url_for('index') }}">Home</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+  
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav mr-auto">
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('books') }}">Books</a>
+        </li>
 
-          {% if user_in_session == False %}
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('login') }}">Login</a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('register') }}">Sign Up</a>
-            </li>
-          {% else %}
-            <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
-            </li>
-          </ul>
-          <form action="{{ url_for('results') }}" method="POST" class="form-inline my-2 my-lg-0">
-            <input class="form-control mr-sm-2" type="search" name="search_input" placeholder="isbn, title or author" aria-label="Search">
-            <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-          </form>
-          {% endif %}
-      </div>
-    </nav>
-  </section>
+        {% if user_in_session == False %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('login') }}">Login</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('register') }}">Sign Up</a>
+          </li>
+        {% else %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('logout') }}">Logout</a>
+          </li>
+        </ul>
+        <form action="{{ url_for('results') }}" method="POST" class="form-inline my-2 my-lg-0">
+          <input class="form-control mr-sm-2" type="search" name="search_input" placeholder="isbn, title or author" aria-label="Search">
+          <button id="search" class="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+        </form>
+        {% endif %}
+    </div>
+  </nav>
 
       {% block body %}
       {% endblock %}

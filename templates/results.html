@@ -1,27 +1,35 @@
 {% extends "book_details_layout.html" %}
 
 {% block body %}
-    <h4  style="margin: 10px; text-align: center; text-decoration: underline;">Search Results</h4>
-    <div class="books">
-        <table class="table table-hover">
-            <thead class="thead-light">
-                <tr>
-                    <th>Cover</th>
-                    <th>Title</th>
-                    <th>Author</th>
-                    <th>Published</th>
-                </tr>
-            </thead>
-            {% for id, isbn, title, author, year in results %}
-                <tbody>
-                    <tr>
-                        <td><img src="http://covers.openlibrary.org/b/isbn/{{ isbn }}-S.jpg" alt="No image available"></td>
-                        <td><a style="color: #000000;" href="{{ url_for('title', title=title) }}">{{ title }}</td>
-                        <td><a style="color: #000000;" href="{{ url_for('author', author=author) }}">{{ author }}</td>
-                        <td>{{ year }}</td>
-                    </tr>
-                </tbody>
-            {% endfor %}
-        </table>
+    <div class="container">
+        <h4  style="margin: 10px; text-align: center; text-decoration: underline;">Search Results</h4>
+        {% if row_count > 0 %}
+            <div class="books">
+                <table class="table table-hover">
+                    <thead class="thead-light">
+                        <tr>
+                            <th>Cover</th>
+                            <th>Title</th>
+                            <th>Author</th>
+                            <th>Published</th>
+                        </tr>
+                    </thead>
+                    {% for id, isbn, title, author, year in results %}
+                        <tbody>
+                            <tr>
+                                <td><img src="http://covers.openlibrary.org/b/isbn/{{ isbn }}-S.jpg" alt="No image available"></td>
+                                <td><a style="color: #000000;" href="{{ url_for('title', title=title) }}">{{ title }}</td>
+                                <td><a style="color: #000000;" href="{{ url_for('author', author=author) }}">{{ author }}</td>
+                                <td>{{ year }}</td>
+                            </tr>
+                        </tbody>
+                    {% endfor %}
+                </table>
+            </div>
+        {% else %}
+            <div class="alert alert-danger">
+                <strong>Error!</strong> No results found. Please enter the complete isbn or complete book title or complete name of the author.
+            </div>
+        {% endif %}
     </div>
 {% endblock %}

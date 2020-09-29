@@ -1,0 +1,135 @@
+{% extends "book_details_layout.html" %}
+
+{% block body %}
+    <style>
+        body {
+            background-color: rgba(211, 211, 211, 0.1);
+        }
+        .books {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            align-items: center;
+        }
+        .book {
+            background-color: #ffffff;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            flex-direction: row;
+            border-radius: 20px;
+        }
+        .book-title {
+            padding-left: 20px;
+        }
+        .form {
+            text-align: center;
+        }
+        .hide {
+            display: none;
+        }
+        .clear {
+            float: none;
+            clear: both;
+        }
+        .rating {
+            width: 90px;
+            unicode-bidi: bidi-override;
+            direction: rtl;
+            text-align: center;
+            position: relative;
+        }
+        .rating > label {
+            float: right;
+            display: inline;
+            padding: 0;
+            margin: 0;
+            position: relative;
+            width: 1.1em;
+            cursor: pointer;
+            color: #000;
+        }
+        .rating > label:hover,
+        .rating > label:hover ~ label,
+        .rating > input.radio-btn:checked ~ label {
+            color: transparent;
+        }
+        .rating > label:hover:before,
+        .rating > label:hover ~ label:before,
+        .rating > input.radio-btn:checked ~ label:before,
+        .rating > input.radio-btn:checked ~ label:before {
+            content: "\2605";
+            position: absolute;
+            left: 0;
+            color: #FFD700;
+        }
+
+        @media only screen and (max-width: 480px) {
+            .books {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                align-items: center;
+            }
+            .book {
+                background-color: #ffffff;
+                padding: 0px;
+                display: flex;
+                justify-content: center;
+                flex-direction: column;
+                border-radius: 20px;
+            }
+            .book-cover {
+                margin-left: 20px;
+            }
+        }
+    </style>
+    <div class="books">
+        {% for id, isbn, title, author, year in book %}
+            <div class="container">
+                {% if isRated %}
+                    <div class="alert alert-success">
+                        <strong>Success!</strong> Thanks for rating this book. Rating: {{ rating }}
+                    </div>
+                {% endif %}
+                <div class="book">
+                    <div class="book-cover">
+                        <img src="http://covers.openlibrary.org/b/isbn/{{ isbn }}-M.jpg" alt="No image available">
+                    </div>
+                    <div class="book-title">
+                        <p>
+                            <h2>{{ title }}</h2>
+                            by: <a href="{{ url_for('author', author=author) }}">{{ author }}</a>
+                            <br>
+                            Published: {{ year }}
+                            <br>
+                            Rating: {{ average_rating }} / 5
+                            <br>
+                            {{ working_rating }} people have rated this book.
+                        </p>
+                        {% if user_in_session %}
+                            <div class="form">
+                                <form action="{{ url_for('title', title=title) }}" method="POST">
+                                    <div class="rating">
+                                        <input id="star5" name="star" type="radio" value="5" class="radio-btn hide" />
+                                        <label for="star5" >☆</label>
+                                        <input id="star4" name="star" type="radio" value="4" class="radio-btn hide" />
+                                        <label for="star4" >☆</label>
+                                        <input id="star3" name="star" type="radio" value="3" class="radio-btn hide" />
+                                        <label for="star3" >☆</label>
+                                        <input id="star2" name="star" type="radio" value="2" class="radio-btn hide" />
+                                        <label for="star2" >☆</label>
+                                        <input id="star1" name="star" type="radio" value="1" class="radio-btn hide" />
+                                        <label for="star1" >☆</label>
+                                        <div class="clear"></div>
+                                        <button class="btn btn-sm btn-outline-primary">Submit</button>
+                                    </div>
+                                </form>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
