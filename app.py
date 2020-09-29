@@ -9,9 +9,15 @@ from datetime import timedelta
 
 app = Flask(__name__)
 
-# Check for environment variable
+# Check for environment variableS
 if not os.getenv("DATABASE_URL"):
     raise RuntimeError("DATABASE_URL is not set")
+
+if not os.getenv("SECRET_KEY"):
+    raise RuntimeError("SECRET_KEY is not set")
+
+if not os.getenv("GOODREADS_KEY"):
+    raise RuntimeError("GOODREADS_KEY is not set")
 
 # Configure session to use filesystem
 app.config["SESSION_PERMANENT"] = False
@@ -147,7 +153,7 @@ def author(author):
     '''
     Scrapes wikipedia for the author's information and picture.
     Gets the average rating and working rating for each book
-    written by the author using Goodreads API.
+    written by the author from the Goodreads API.
     '''
 
     author = author
@@ -160,26 +166,28 @@ def author(author):
         url += "_"
     response = requests.get(url)
 
+    img = None
+    author_info = None
+
     # Checks to make sure the response was successful
-    if response.status_code != 200:
-        return
-    soup = BeautifulSoup(response.content, "html.parser")
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.content, "html.parser")
 
-    # Scraps the author's image
-    images = soup.find_all("img")
-    for image in images:
-        img = image['src']
-        if img[-3:].lower() == "jpg":
-            break
+        # Scraps the author's image
+        images = soup.find_all("img")
+        for image in images:
+            img = image['src']
+            if img[-3:].lower() == "jpg":
+                break
 
-    # Scraps the author's information
-    info = soup.find_all("p")
-    author_info = ""
-    for passage in info:
-        passage = passage.get_text()
-        if name_substrings[-1] in passage:
-            author_info = passage
-            break
+        # Scraps the author's information
+        info = soup.find_all("p")
+        author_info = ""
+        for passage in info:
+            passage = passage.get_text()
+            if name_substrings[-1] in passage:
+                author_info = passage
+                break
 
     # Gets the books written by the author
     books = db.execute(f"SELECT * FROM books WHERE author='{author}'")
@@ -188,7 +196,7 @@ def author(author):
     # Gets the rating for each book by the selected author
     data = {}
     for isbn in isbns:
-        res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": "X88NGhXpOk5vLNQuNpk0iA", "isbns": isbn})
+        res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": os.getenv("GOODREADS_KEY"), "isbns": isbn})
         goodreads_data = res.json()["books"][0]
         average_rating = goodreads_data["average_rating"]
         working_rating = goodreads_data["work_ratings_count"]
@@ -208,8 +216,13 @@ def author(author):
 @app.route("/books/isbn/<isbn>")
 def isbn(isbn):
     '''
-    Gets and displays the details of a selected book by isbn.
+    Gets and displays the details of a book selected by isbn.
     '''
+
+    if "user" in session:
+        user_in_session = True
+    else:
+        user_in_session = False
 
     book = db.execute(f"SELECT * FROM books WHERE isbn='{isbn}'")
     url = "https://www.goodreads.com/book/review_counts.json"
@@ -217,14 +230,19 @@ def isbn(isbn):
     data = res.json()['books'][0]
     average_rating = data['average_rating']
     working_rating = data['work_ratings_count']
-    return render_template("isbn_book_info.html", book=book, average_rating=average_rating, working_rating=working_rating)
+    return render_template("book_info.html", book=book, average_rating=average_rating, working_rating=working_rating, user_in_session=user_in_session)
 
 
-@app.route("/books/title/<title>")
+@app.route("/books/title/<title>", methods=["POST", "GET"])
 def title(title):
     '''
-    Gets and displays the details of a selected book by title.
+    Gets and displays the details of a book selected by title.
     '''
+
+    if "user" in session:
+        user_in_session = True
+    else:
+        user_in_session = False
 
     book = db.execute(f"SELECT * FROM books WHERE title='{title}'")
     url = "https://www.goodreads.com/book/review_counts.json"
@@ -234,16 +252,42 @@ def title(title):
         average_rating = data['average_rating']
         working_rating = data['work_ratings_count']
 
-    if "user" in session:
-        user_in_session = True
-    else:
-        user_in_session = False
     book = db.execute(f"SELECT * FROM books WHERE title='{title}'")
-    return render_template("isbn_book_info.html", book=book, average_rating=average_rating, working_rating=working_rating, user_in_session=user_in_session)
+
+    # Post method is for ratings
+    if request.method == "POST":
+        rating = request.form.get("star")
+        if rating != None:
+            rating = int(rating)
+            isRated = True
+            return render_template("book_info.html", book=book, isRated=isRated, rating=rating, average_rating=average_rating, working_rating=working_rating, user_in_session=user_in_session)
+        
+    return render_template("book_info.html", book=book, average_rating=average_rating, working_rating=working_rating, user_in_session=user_in_session)
 
 
 @app.route("/results", methods=["POST"])
 def results():
+    '''
+    Gets and returns the results of the user search input
+    '''
+    # Gets the user's search input and formats it to match database query
     input_query = request.form.get("search_input")
-    results = db.execute(f"SELECT * FROM books WHERE author LIKE '{input_query}%' ORDER BY author ASC")
-    return render_template("results.html", results=results)
+    input_query.strip("'")
+    substrings = input_query.split()
+    input_query = ""
+    for word in substrings:
+        input_query += word.capitalize() + " "
+    input_query = input_query.strip()
+
+    rows = db.execute("SELECT id, isbn, title, author, year FROM books WHERE \
+                        isbn LIKE :query OR \
+                        title LIKE :query OR \
+                        author LIKE :query",
+                        {"query": input_query})
+    
+    row_count = rows.rowcount
+    if row_count == 0:
+        return render_template("results.html", row_count=row_count)
+
+    results = rows.fetchall()
+    return render_template("results.html", results=results, row_count=row_count)
