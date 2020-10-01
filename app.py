@@ -31,6 +31,8 @@ app.permanent_session_lifetime = timedelta(minutes=15)
 engine = create_engine(os.getenv("DATABASE_URL"))
 db = scoped_session(sessionmaker(bind=engine))
 
+user_id = None
+
 @app.route("/", methods=["POST", "GET"])
 def index():
     '''
@@ -68,6 +70,11 @@ def login():
                 session.permanent = True
                 session["user"] = username
                 user_in_session = True
+
+                # Gets the user's id and stores it in a global variable
+                global user_id
+                user_id = id
+
                 return redirect(url_for("index"))
 
         error = "Invalid credentials"
@@ -96,8 +103,8 @@ def register():
 
         # Checks if the username length is acceptable
         username_length = len(username)
-        if username_length < 5 or username_length > 12:
-            username_error = "Username must be between 5 to 12 characters."
+        if username_length < 3 or username_length > 12:
+            username_error = "Username must be between 3 to 12 characters."
             return render_template("register.html", username_error=username_error, user_in_session=user_in_session)
 
         # Checks if both password fields are the same
@@ -223,6 +230,8 @@ def isbn(isbn):
         user_in_session = True
     else:
         user_in_session = False
+    
+    global user_id
 
     book = db.execute(f"SELECT * FROM books WHERE isbn='{isbn}'")
     url = "https://www.goodreads.com/book/review_counts.json"
@@ -230,7 +239,20 @@ def isbn(isbn):
     data = res.json()['books'][0]
     average_rating = data['average_rating']
     working_rating = data['work_ratings_count']
-    return render_template("book_info.html", book=book, average_rating=average_rating, working_rating=working_rating, user_in_session=user_in_session)
+
+    # Checks if they user has already rated the book
+    user_rated_book = False
+    if "user" in session:
+
+        # Gets the book_id
+        db_id = db.execute(f"SELECT * FROM books WHERE isbn='{isbn}'")
+        for id, isbn, title, author, year in db_id:
+            book_id = id
+
+        rating = db.execute(f"SELECT rating, user_id, book_id FROM ratings WHERE user_id={user_id} and book_id={book_id}")
+        if rating.rowcount != 0:
+            user_rated_book = True
+    return render_template("book_info.html", book=book, average_rating=average_rating, working_rating=working_rating, user_rated_book=user_rated_book, user_in_session=user_in_session)
 
 
 @app.route("/books/title/<title>", methods=["POST", "GET"])
@@ -239,14 +261,19 @@ def title(title):
     Gets and displays the details of a book selected by title.
     '''
 
+    # Sets a user_in_session variable
     if "user" in session:
         user_in_session = True
     else:
         user_in_session = False
 
+    global user_id
+
+    # Gets the rating of the book from the Goodreads API
     book = db.execute(f"SELECT * FROM books WHERE title='{title}'")
     url = "https://www.goodreads.com/book/review_counts.json"
     for id, isbn, title, author, year in book:
+        book_id = id # Gets the book's id - used for query later
         res = requests.get(url, params={"key": "X88NGhXpOk5vLNQuNpk0iA", "isbns": isbn})
         data = res.json()['books'][0]
         average_rating = data['average_rating']
@@ -254,15 +281,30 @@ def title(title):
 
     book = db.execute(f"SELECT * FROM books WHERE title='{title}'")
 
+    # Checks if they user has already rated the book
+    user_rated_book = False
+    if "user" in session:
+        rating = db.execute(f"SELECT rating, user_id, book_id FROM ratings WHERE user_id={user_id} and book_id={book_id}")
+        if rating.rowcount != 0:
+            user_rated_book = True
+
     # Post method is for ratings
     if request.method == "POST":
         rating = request.form.get("star")
+        isRated = False
+        # Makes sure the user rated the book
         if rating != None:
             rating = int(rating)
             isRated = True
-            return render_template("book_info.html", book=book, isRated=isRated, rating=rating, average_rating=average_rating, working_rating=working_rating, user_in_session=user_in_session)
-        
-    return render_template("book_info.html", book=book, average_rating=average_rating, working_rating=working_rating, user_in_session=user_in_session)
+            # Inserts the rating into a database if no rating already exists
+            if not user_rated_book:
+                db.execute("INSERT INTO ratings (rating, user_id, book_id) VALUES (:rating, :user_id, :book_id)",
+                            {"rating": rating, "user_id": user_id, "book_id": book_id})
+                db.commit()
+        return render_template("book_info.html", book=book, isRated=isRated, user_rated_book=user_rated_book, average_rating=average_rating, working_rating=working_rating, user_in_session=user_in_session)
+
+    else:
+        return render_template("book_info.html", book=book, average_rating=average_rating, working_rating=working_rating, user_rated_book=user_rated_book, user_in_session=user_in_session)
 
 
 @app.route("/results", methods=["POST"])
