@@ -89,7 +89,7 @@
             <div class="container">
                 {% if isRated %}
                     <div class="alert alert-success">
-                        <strong>Success!</strong> Thanks for rating this book. Rating: {{ rating }}
+                        <strong>Success!</strong> Thanks for rating this book.
                     </div>
                 {% endif %}
                 <div class="book">
@@ -108,24 +108,28 @@
                             {{ working_rating }} people have rated this book.
                         </p>
                         {% if user_in_session %}
-                            <div class="form">
-                                <form action="{{ url_for('title', title=title) }}" method="POST">
-                                    <div class="rating">
-                                        <input id="star5" name="star" type="radio" value="5" class="radio-btn hide" />
-                                        <label for="star5" >☆</label>
-                                        <input id="star4" name="star" type="radio" value="4" class="radio-btn hide" />
-                                        <label for="star4" >☆</label>
-                                        <input id="star3" name="star" type="radio" value="3" class="radio-btn hide" />
-                                        <label for="star3" >☆</label>
-                                        <input id="star2" name="star" type="radio" value="2" class="radio-btn hide" />
-                                        <label for="star2" >☆</label>
-                                        <input id="star1" name="star" type="radio" value="1" class="radio-btn hide" />
-                                        <label for="star1" >☆</label>
-                                        <div class="clear"></div>
-                                        <button class="btn btn-sm btn-outline-primary">Submit</button>
-                                    </div>
-                                </form>
-                            </div>
+                            {% if user_rated_book %}
+                                <span>You rated this book already.</span>
+                            {% else %}
+                                <div class="form">
+                                    <form action="{{ url_for('title', title=title) }}" method="POST">
+                                        <div class="rating">
+                                            <input id="star5" name="star" type="radio" value="5" class="radio-btn hide" />
+                                            <label for="star5" >☆</label>
+                                            <input id="star4" name="star" type="radio" value="4" class="radio-btn hide" />
+                                            <label for="star4" >☆</label>
+                                            <input id="star3" name="star" type="radio" value="3" class="radio-btn hide" />
+                                            <label for="star3" >☆</label>
+                                            <input id="star2" name="star" type="radio" value="2" class="radio-btn hide" />
+                                            <label for="star2" >☆</label>
+                                            <input id="star1" name="star" type="radio" value="1" class="radio-btn hide" />
+                                            <label for="star1" >☆</label>
+                                            <div class="clear"></div>
+                                            <button class="btn btn-sm btn-outline-primary">Submit</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            {% endif %}
                         {% endif %}
                     </div>
                 </div>
