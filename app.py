@@ -195,29 +195,29 @@ def author(author):
             if name_substrings[-1] in passage:
                 author_info = passage
                 break
+        author_info = author_info.strip("[]123456789")
 
-    # Gets the books written by the author
-    books = db.execute(f"SELECT * FROM books WHERE author='{author}'")
-    isbns = [isbn for id, isbn, title, author, year in books]
+    # # Gets the books written by the author
+    # books = db.execute(f"SELECT * FROM books WHERE author='{author}'")
+    # isbns = [isbn for id, isbn, title, author, year in books]
 
     # Gets the rating for each book by the selected author
-    data = {}
-    for isbn in isbns:
-        res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": os.getenv("GOODREADS_KEY"), "isbns": isbn})
-        goodreads_data = res.json()["books"][0]
-        average_rating = goodreads_data["average_rating"]
-        working_rating = goodreads_data["work_ratings_count"]
+    # data = {}
+    # for isbn in isbns:
+    #     res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": os.getenv("GOODREADS_KEY"), "isbns": isbn})
+    #     goodreads_data = res.json()["books"][0]
+    #     average_rating = goodreads_data["average_rating"]
+    #     working_rating = goodreads_data["work_ratings_count"]
 
-        data[isbn] = {"average_rating": average_rating, 
-                    "working_rating": working_rating}
-        time.sleep(1)
+    #     data[isbn] = {"average_rating": average_rating, 
+    #                 "working_rating": working_rating}
     
     if "user" in session:
         user_in_session = True
     else:
         user_in_session = False
     books = db.execute(f"SELECT * FROM books WHERE author='{author}'")
-    return render_template("author_info.html", author=author, books=books, img=img, author_info=author_info, url=url, data=data, user_in_session=user_in_session)
+    return render_template("author_info.html", author=author, books=books, img=img, author_info=author_info, url=url, user_in_session=user_in_session)
 
 
 @app.route("/books/isbn/<isbn>")

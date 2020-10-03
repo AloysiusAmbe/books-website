@@ -37,8 +37,6 @@
         margin: 4% 2%;
         border-radius: 20px;
         padding: 10px;
-    }
-    .book-cover {
         display: flex;
         flex-direction: row;
         justify-content: start;
@@ -104,21 +102,15 @@
                 <div class="book">
                     <div class="book-cover">
                         <img src="http://covers.openlibrary.org/b/isbn/{{ isbn }}-S.jpg" alt="No image available">
-                        <h5 style="padding: 0 10px;">
-                            <a style="color: #000000;" href="{{ url_for('title', title=title) }}">{{ title }}</a>
-                        </h5>
                     </div>
-                    <div class="book-title">
-                        <br>
-                        <span>
+                    <div class="book-title" style="padding: 0 10px;">
+                        <h5>
+                            <a style="color: #000000;" href="{{ url_for('title', title=title) }}"><strong>{{ title }}</strong></a>
+                        </h5>
+                        <span style="font-size: 0.9rem;">
                             Published: {{ year }}
                         </span>
                         <br>
-                        <span>
-                            Rating: {{ data[isbn]["average_rating"] }} / 5
-                        </span>
-                        <br>
-                        <span>{{ data[isbn]["working_rating"] }} people have rated this book.</span>
                     </div>
                 </div>
             {% endfor %}
