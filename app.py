@@ -235,7 +235,7 @@ def isbn(isbn):
 
     book = db.execute(f"SELECT * FROM books WHERE isbn='{isbn}'")
     url = "https://www.goodreads.com/book/review_counts.json"
-    res = requests.get(url, params={"key": "X88NGhXpOk5vLNQuNpk0iA", "isbns": isbn})
+    res = requests.get(url, params={"key": os.getenv("GOODREADS_KEY"), "isbns": isbn})
     data = res.json()['books'][0]
     average_rating = data['average_rating']
     working_rating = data['work_ratings_count']
@@ -274,7 +274,7 @@ def title(title):
     url = "https://www.goodreads.com/book/review_counts.json"
     for id, isbn, title, author, year in book:
         book_id = id # Gets the book's id - used for query later
-        res = requests.get(url, params={"key": "X88NGhXpOk5vLNQuNpk0iA", "isbns": isbn})
+        res = requests.get(url, params={"key": os.getenv("GOODREADS_KEY"), "isbns": isbn})
         data = res.json()['books'][0]
         average_rating = data['average_rating']
         working_rating = data['work_ratings_count']
