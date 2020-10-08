@@ -77,7 +77,7 @@ def login():
 
                 return redirect(url_for("index"))
 
-        error = "Invalid credentials"
+        error = "Invalid login credentials"
         return render_template("login.html", username_error=error, user_in_session=user_in_session)
 
     return render_template("login.html", user_in_session=user_in_session)
@@ -195,22 +195,6 @@ def author(author):
             if name_substrings[-1] in passage:
                 author_info = passage
                 break
-        author_info = author_info.strip("[]123456789")
-
-    # # Gets the books written by the author
-    # books = db.execute(f"SELECT * FROM books WHERE author='{author}'")
-    # isbns = [isbn for id, isbn, title, author, year in books]
-
-    # Gets the rating for each book by the selected author
-    # data = {}
-    # for isbn in isbns:
-    #     res = requests.get("https://www.goodreads.com/book/review_counts.json", params={"key": os.getenv("GOODREADS_KEY"), "isbns": isbn})
-    #     goodreads_data = res.json()["books"][0]
-    #     average_rating = goodreads_data["average_rating"]
-    #     working_rating = goodreads_data["work_ratings_count"]
-
-    #     data[isbn] = {"average_rating": average_rating, 
-    #                 "working_rating": working_rating}
     
     if "user" in session:
         user_in_session = True
@@ -232,7 +216,8 @@ def isbn(isbn):
         user_in_session = False
     
     global user_id
-
+    
+    # Gets the ratings of the book from the goodreads API
     book = db.execute(f"SELECT * FROM books WHERE isbn='{isbn}'")
     url = "https://www.goodreads.com/book/review_counts.json"
     res = requests.get(url, params={"key": os.getenv("GOODREADS_KEY"), "isbns": isbn})
@@ -249,7 +234,7 @@ def isbn(isbn):
         for id, isbn, title, author, year in db_id:
             book_id = id
 
-        rating = db.execute(f"SELECT rating, user_id, book_id FROM ratings WHERE user_id={user_id} and book_id={book_id}")
+        rating = db.execute(f"SELECT rating, user_id, book_id FROM ratings WHERE user_id={user_id} AND book_id={book_id}")
         if rating.rowcount != 0:
             user_rated_book = True
     return render_template("book_info.html", book=book, average_rating=average_rating, working_rating=working_rating, user_rated_book=user_rated_book, user_in_session=user_in_session)
