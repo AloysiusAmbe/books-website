@@ -1,4 +1,4 @@
-import os, requests, time
+import os, requests, time, datetime
 from bs4 import BeautifulSoup
 
 from flask import Flask, session, render_template, redirect, request, flash, url_for
@@ -290,18 +290,53 @@ def title(title):
 
     # Post method is for ratings
     if request.method == "POST":
-        rating = request.form.get("star")
-        isRated = False
-        # Makes sure the user rated the book
-        if rating != None:
-            rating = int(rating)
-            isRated = True
-            # Inserts the rating into a database if no rating already exists
-            if not user_rated_book:
-                db.execute("INSERT INTO ratings (rating, user_id, book_id) VALUES (:rating, :user_id, :book_id)",
-                            {"rating": rating, "user_id": user_id, "book_id": book_id})
-                db.commit()
-        return render_template("book_info.html", book=book, isRated=isRated, user_rated_book=user_rated_book, average_rating=average_rating, working_rating=working_rating, user_in_session=user_in_session)
+        # Gets which form is being submitted to the server
+        form_id = request.args.get('form_id', 2, type=int)
+
+        # The rating form is sbumitted
+        if form_id == 1:
+            rating = request.form.get("star")
+            isRated = False
+            # Makes sure the user rated the book
+            if rating != None:
+                rating = int(rating)
+                isRated = True
+                # Inserts the rating into a database if no rating already exists
+                if not user_rated_book:
+                    db.execute("INSERT INTO ratings (rating, user_id, book_id) VALUES (:rating, :user_id, :book_id)",
+                                {"rating": rating, "user_id": user_id, "book_id": book_id})
+                    db.commit()
+                    success_message = "Thanks for rating this book."
+                    return render_template("book_info.html", book=book, isRated=isRated, user_rated_book=user_rated_book, average_rating=average_rating, working_rating=working_rating, success_message=success_message, user_in_session=user_in_session)
+            return render_template("book_info.html", book=book, isRated=isRated, user_rated_book=user_rated_book, average_rating=average_rating, working_rating=working_rating, user_in_session=user_in_session)
+
+        # The reviews form is submitted
+        else:
+            # Gets the date
+            current_time = datetime.datetime.now()
+            month = current_time.strftime("%b")
+            day = current_time.strftime("%d")
+            year = current_time.strftime("%Y")
+            date = f"{month} {day}, {year}"
+
+            # Gets the review submitted
+            review = request.form.get('review')
+
+            has_blank_review = False
+            if review == "":
+                has_blank_review = True
+                error_message = "Cannot leave a blank review."
+                return render_template("book_info.html", book=book, has_blank_review=has_blank_review, user_rated_book=user_rated_book, average_rating=average_rating, working_rating=working_rating, error_message=error_message, user_in_session=user_in_session)
+            
+            # Inserts the comment into the database
+            db.execute("INSERT INTO reviews (review, date, user_id, book_id) VALUES (:review, :date, :user_id, :book_id)",
+                        {"review": review, "date": date, "user_id": user_id, "book_id": book_id})
+            db.commit()
+            success_message = "Review has been submitted."
+            review_submitted = True
+
+            # Gets the reviews
+            return render_template("book_info.html", book=book, review_submitted=review_submitted, user_rated_book=user_rated_book, average_rating=average_rating, working_rating=working_rating, success_message=success_message, user_in_session=user_in_session)
 
     else:
         return render_template("book_info.html", book=book, average_rating=average_rating, working_rating=working_rating, user_rated_book=user_rated_book, user_in_session=user_in_session)

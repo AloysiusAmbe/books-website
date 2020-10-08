@@ -67,7 +67,6 @@
         @media only screen and (max-width: 480px) {
             .books {
                 display: flex;
-                align-items: center;
                 justify-content: center;
                 align-items: center;
             }
@@ -84,56 +83,78 @@
             }
         }
     </style>
-    <div class="books">
-        {% for id, isbn, title, author, year in book %}
-            <div class="container">
-                {% if isRated %}
-                    <div class="alert alert-success">
-                        <strong>Success!</strong> Thanks for rating this book.
-                    </div>
-                {% endif %}
-                <div class="book">
-                    <div class="book-cover">
-                        <img src="http://covers.openlibrary.org/b/isbn/{{ isbn }}-M.jpg" alt="No image available">
-                    </div>
-                    <div class="book-title">
-                        <p>
-                            <h2>{{ title }}</h2>
-                            by: <a href="{{ url_for('author', author=author) }}">{{ author }}</a>
-                            <br>
-                            Published: {{ year }}
-                            <br>
-                            Rating: {{ average_rating }} / 5
-                            <br>
-                            {{ working_rating }} people have rated this book.
-                        </p>
-                        {% if user_in_session %}
-                            {% if user_rated_book %}
-                                <span>You rated this book already.</span>
-                            {% else %}
-                                <div class="form">
-                                    <form action="{{ url_for('title', title=title) }}" method="POST">
-                                        <div class="rating">
-                                            <input id="star5" name="star" type="radio" value="5" class="radio-btn hide" />
-                                            <label for="star5" >☆</label>
-                                            <input id="star4" name="star" type="radio" value="4" class="radio-btn hide" />
-                                            <label for="star4" >☆</label>
-                                            <input id="star3" name="star" type="radio" value="3" class="radio-btn hide" />
-                                            <label for="star3" >☆</label>
-                                            <input id="star2" name="star" type="radio" value="2" class="radio-btn hide" />
-                                            <label for="star2" >☆</label>
-                                            <input id="star1" name="star" type="radio" value="1" class="radio-btn hide" />
-                                            <label for="star1" >☆</label>
-                                            <div class="clear"></div>
-                                            <button class="btn btn-sm btn-outline-primary">Submit</button>
-                                        </div>
-                                    </form>
-                                </div>
+
+    <section>
+        <div class="books">
+            {% for id, isbn, title, author, year in book %}
+                <div class="container">
+                    {% if isRated or review_submitted %}
+                        <div class="alert alert-success">
+                            <strong>Success!</strong> {{ success_message }}
+                        </div>
+                    {% endif %}
+
+                    {% if isRated or has_blank_review %}
+                        <div class="alert alert-danger">
+                            <strong>Error!</strong> {{ error_message }}
+                        </div>
+                    {% endif %}
+                    <div class="book">
+                        <div class="book-cover">
+                            <img src="http://covers.openlibrary.org/b/isbn/{{ isbn }}-M.jpg" alt="No image available">
+                        </div>
+                        <div class="book-title">
+                            <p>
+                                <h2>{{ title }}</h2>
+                                by: <a href="{{ url_for('author', author=author) }}">{{ author }}</a>
+                                <br>
+                                Published: {{ year }}
+                                <br>
+                                Rating: {{ average_rating }} / 5
+                                <br>
+                                {{ working_rating }} people have rated this book.
+                            </p>
+                            {% if user_in_session %}
+                                {% if user_rated_book %}
+                                    <span>You rated this book already.</span>
+                                {% else %}
+                                    <div class="form">
+                                        <form action="{{ url_for('title', title=title, form_id=1) }}" method="POST">
+                                            <div class="rating">
+                                                <input id="star5" name="star" type="radio" value="5" class="radio-btn hide" />
+                                                <label for="star5" >☆</label>
+                                                <input id="star4" name="star" type="radio" value="4" class="radio-btn hide" />
+                                                <label for="star4" >☆</label>
+                                                <input id="star3" name="star" type="radio" value="3" class="radio-btn hide" />
+                                                <label for="star3" >☆</label>
+                                                <input id="star2" name="star" type="radio" value="2" class="radio-btn hide" />
+                                                <label for="star2" >☆</label>
+                                                <input id="star1" name="star" type="radio" value="1" class="radio-btn hide" />
+                                                <label for="star1" >☆</label>
+                                                <div class="clear"></div>
+                                                <button class="btn btn-sm btn-outline-primary">Submit</button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                {% endif %}
                             {% endif %}
-                        {% endif %}
+                        </div>
                     </div>
+                    <br>
+                    {% if user_in_session %}
+                        <div class="review">
+                            <div class="form-group">
+                                <form action="{{ url_for('title', title=title, form_id=2) }}" method="POST" id="review-form">
+                                    <label for="reviewTextarea1">Leave a review</label>
+                                    <textarea class="form-control" id="reviewTextarea1" name="review" rows="3" form="review-form" placeholder="Enter review here..."></textarea>
+                                    <br>
+                                    <button class="btn btn-sm btn-outline-primary">Submit</button>
+                                </form>
+                            </div>
+                        </div>
+                    {% endif %}
                 </div>
-            </div>
-        {% endfor %}
-    </div>
+            {% endfor %}
+        </div>
+    </section>
 {% endblock %}
