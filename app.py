@@ -244,6 +244,8 @@ def isbn(isbn):
 def title(title):
     '''
     Gets and displays the details of a book selected by title.
+    Allows the user to rate the book.
+    Allows the user to write and submit a review for the book.
     '''
 
     # Sets a user_in_session variable
@@ -273,6 +275,10 @@ def title(title):
         if rating.rowcount != 0:
             user_rated_book = True
 
+    # Gets the reviews for the book
+    reviews = db.execute(f"SELECT review, date, user_id FROM books JOIN reviews ON reviews.book_id=books.id WHERE books.id={book_id}")
+    number_of_reviews = reviews.rowcount
+
     # Post method is for ratings
     if request.method == "POST":
         # Gets which form is being submitted to the server
@@ -282,10 +288,12 @@ def title(title):
         if form_id == 1:
             rating = request.form.get("star")
             isRated = False
+
             # Makes sure the user rated the book
             if rating != None:
                 rating = int(rating)
                 isRated = True
+
                 # Inserts the rating into a database if no rating already exists
                 if not user_rated_book:
                     db.execute("INSERT INTO ratings (rating, user_id, book_id) VALUES (:rating, :user_id, :book_id)",
@@ -320,11 +328,11 @@ def title(title):
             success_message = "Review has been submitted."
             review_submitted = True
 
-            # Gets the reviews
             return render_template("book_info.html", book=book, review_submitted=review_submitted, user_rated_book=user_rated_book, average_rating=average_rating, working_rating=working_rating, success_message=success_message, user_in_session=user_in_session)
-
+    
+    # Gets request response
     else:
-        return render_template("book_info.html", book=book, average_rating=average_rating, working_rating=working_rating, user_rated_book=user_rated_book, user_in_session=user_in_session)
+        return render_template("book_info.html", book=book, reviews=reviews, average_rating=average_rating, working_rating=working_rating, user_rated_book=user_rated_book, user_in_session=user_in_session)
 
 
 @app.route("/results", methods=["POST"])

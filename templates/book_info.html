@@ -153,6 +153,10 @@
                             </div>
                         </div>
                     {% endif %}
+
+                    {% for review, date in reviews %}
+                        {{ review }}
+                    {% endfor %}
                 </div>
             {% endfor %}
         </div>
