@@ -94,7 +94,7 @@
                         </div>
                     {% endif %}
 
-                    {% if isRated or has_blank_review %}
+                    {% if has_blank_review %}
                         <div class="alert alert-danger">
                             <strong>Error!</strong> {{ error_message }}
                         </div>
@@ -119,7 +119,7 @@
                                     <span>You rated this book already.</span>
                                 {% else %}
                                     <div class="form">
-                                        <form action="{{ url_for('title', title=title, form_id=1) }}" method="POST">
+                                        <form action="{{ url_for('title', title=title, form_id=1, author=author) }}" method="POST">
                                             <div class="rating">
                                                 <input id="star5" name="star" type="radio" value="5" class="radio-btn hide" />
                                                 <label for="star5" >☆</label>
@@ -144,7 +144,7 @@
                     {% if user_in_session %}
                         <div class="review">
                             <div class="form-group">
-                                <form action="{{ url_for('title', title=title, form_id=2) }}" method="POST" id="review-form">
+                                <form action="{{ url_for('title', title=title, form_id=2, author=author) }}" method="POST" id="review-form">
                                     <label for="reviewTextarea1">Leave a review</label>
                                     <textarea class="form-control" id="reviewTextarea1" name="review" rows="3" form="review-form" placeholder="Enter review here..."></textarea>
                                     <br>
@@ -154,8 +154,17 @@
                         </div>
                     {% endif %}
 
-                    {% for review, date in reviews %}
-                        {{ review }}
+                    {% for username, review, date in reviews %}
+                        <div class="review">
+                            <div class="posted" style="position: relative; font-size: 13px;">
+                                <span style="position: relative; font-weight: bold;">{{ username }}</span>
+                                <span style="position: absolute; right: 0;">{{ date }}</span>
+                            </div>
+                            <div class="text">
+                                <span>{{ review }}</span>
+                            </div>
+                            <hr>
+                        </div>
                     {% endfor %}
                 </div>
             {% endfor %}

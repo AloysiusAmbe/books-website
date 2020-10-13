@@ -51,7 +51,6 @@ def index():
 def login():
     # Redirects the user to the main passage if in session
     if "user" in session:
-        user_in_session = True
         return redirect(url_for('index'))
     else:
         user_in_session = False
@@ -62,7 +61,9 @@ def login():
         username = request.form.get('username')
         password = request.form.get('password')
 
-        users = db.execute("SELECT * FROM users")
+        users = db.execute("SELECT * FROM users WHERE username = :username AND password = :password",
+                            {"username": username, "password": password})
+
         # Check to see if user is in the database
         for id, db_username, db_password in users:
             if username == db_username and password == db_password:
@@ -151,7 +152,7 @@ def books():
         user_in_session = False
 
     # Displays all the available books
-    books = db.execute(f"SELECT * FROM books")
+    books = db.execute("SELECT * FROM books")
     return render_template("book_list.html", books=books, user_in_session=user_in_session)
 
 
@@ -200,7 +201,8 @@ def author(author):
         user_in_session = True
     else:
         user_in_session = False
-    books = db.execute(f"SELECT * FROM books WHERE author='{author}'")
+    books = db.execute("SELECT * FROM books WHERE author = :author",
+                        {"author": author})
     return render_template("author_info.html", author=author, books=books, img=img, author_info=author_info, url=url, user_in_session=user_in_session)
 
 
@@ -225,23 +227,28 @@ def isbn(isbn):
     average_rating = data['average_rating']
     working_rating = data['work_ratings_count']
 
+    # Gets the book_id
+    db_id = db.execute("SELECT * FROM books WHERE isbn = :isbn",
+                        {"isbn": isbn})
+    for id, isbn, title, author, year in db_id:
+        book_id = id # Gets the book's id - used for query later
+
+    # Gets the reviews for the book
+    reviews = db.execute("SELECT username, review, date FROM users JOIN reviews ON reviews.user_id = users.id AND reviews.book_id = :book_id",
+                        {"book_id": book_id})
+
     # Checks if they user has already rated the book
     user_rated_book = False
     if "user" in session:
-
-        # Gets the book_id
-        db_id = db.execute(f"SELECT * FROM books WHERE isbn='{isbn}'")
-        for id, isbn, title, author, year in db_id:
-            book_id = id
-
-        rating = db.execute(f"SELECT rating, user_id, book_id FROM ratings WHERE user_id={user_id} AND book_id={book_id}")
+        rating = db.execute("SELECT rating, user_id, book_id FROM ratings WHERE user_id = :user_id AND book_id = :book_id",
+                                {"user_id": user_id, "book_id": book_id})
         if rating.rowcount != 0:
             user_rated_book = True
-    return render_template("book_info.html", book=book, average_rating=average_rating, working_rating=working_rating, user_rated_book=user_rated_book, user_in_session=user_in_session)
+    return render_template("book_info.html", book=book, average_rating=average_rating, working_rating=working_rating, user_rated_book=user_rated_book, reviews=reviews, user_in_session=user_in_session)
 
 
-@app.route("/books/title/<title>", methods=["POST", "GET"])
-def title(title):
+@app.route("/books/title/<author>/<title>", methods=["POST", "GET"])
+def title(title, author):
     '''
     Gets and displays the details of a book selected by title.
     Allows the user to rate the book.
@@ -257,7 +264,8 @@ def title(title):
     global user_id
 
     # Gets the rating of the book from the Goodreads API
-    book = db.execute(f"SELECT * FROM books WHERE title='{title}'")
+    book = db.execute("SELECT * FROM books WHERE title = :title AND author = :author",
+                        {"title": title, "author": author})
     url = "https://www.goodreads.com/book/review_counts.json"
     for id, isbn, title, author, year in book:
         book_id = id # Gets the book's id - used for query later
@@ -266,18 +274,20 @@ def title(title):
         average_rating = data['average_rating']
         working_rating = data['work_ratings_count']
 
-    book = db.execute(f"SELECT * FROM books WHERE title='{title}'")
+    book = db.execute("SELECT * FROM books WHERE title = :title AND author = :author",
+                        {"title": title, "author": author})
 
     # Checks if they user has already rated the book
     user_rated_book = False
     if "user" in session:
-        rating = db.execute(f"SELECT rating, user_id, book_id FROM ratings WHERE user_id={user_id} and book_id={book_id}")
+        rating = db.execute("SELECT rating, user_id, book_id FROM ratings WHERE user_id = :user_id AND book_id = :book_id",
+                            {"user_id": user_id, "book_id": book_id})
         if rating.rowcount != 0:
             user_rated_book = True
 
     # Gets the reviews for the book
-    reviews = db.execute(f"SELECT review, date, user_id FROM books JOIN reviews ON reviews.book_id=books.id WHERE books.id={book_id}")
-    number_of_reviews = reviews.rowcount
+    reviews = db.execute("SELECT username, review, date FROM users JOIN reviews ON reviews.user_id = users.id AND reviews.book_id = :book_id",
+                        {"book_id": book_id})
 
     # Post method is for ratings
     if request.method == "POST":
@@ -332,7 +342,7 @@ def title(title):
     
     # Gets request response
     else:
-        return render_template("book_info.html", book=book, reviews=reviews, average_rating=average_rating, working_rating=working_rating, user_rated_book=user_rated_book, user_in_session=user_in_session)
+        return render_template("book_info.html", book=book, average_rating=average_rating, working_rating=working_rating, user_rated_book=user_rated_book, reviews=reviews, user_in_session=user_in_session)
 
 
 @app.route("/results", methods=["POST"])

@@ -67,7 +67,7 @@
                 <tbody>
                     <tr>
                         <td><a style="color: #000000;" href="{{ url_for('isbn', isbn=isbn) }}">{{ isbn }}</a></td>
-                        <td><a style="color: #000000;" href="{{ url_for('title', title=title) }}">{{ title }}</a></td>
+                        <td><a style="color: #000000;" href="{{ url_for('title', title=title, author=author) }}">{{ title }}</a></td>
                         <td><a style="color: #000000;" href="{{ url_for('author', author=author) }}">{{ author }}</a></td>
                         <td>{{ year }}</td>
                     </tr>
